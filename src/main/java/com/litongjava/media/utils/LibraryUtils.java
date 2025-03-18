@@ -18,6 +18,7 @@ public class LibraryUtils {
 
     String osName = System.getProperty("os.name").toLowerCase();
     String userHome = System.getProperty("user.home").toLowerCase();
+    System.out.println("os name:" + osName + " user.home:" + userHome);
     String archName;
     String libFileName;
     if (osName.contains("win")) {
@@ -26,7 +27,7 @@ public class LibraryUtils {
     } else if (osName.contains("mac")) {
       libFileName = Core.MACOS_NATIVE_LIBRARY_NAME;
       archName = DARWIN_ARM64;
-    } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+    } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix") || osName.contains("linux")) {
       libFileName = Core.UNIX_NATIVE_LIBRARY_NAME;
       archName = LINUX_AMD64;
     } else {
@@ -43,11 +44,14 @@ public class LibraryUtils {
       archDir.mkdirs();
     }
 
-    // Target library file path
-    File libFile = new File(archDir, libFileName);
-    // If the file does not exist, copy it from the jar resources to the local directory
+    File libFile = new File(userHome + File.separator + archDir, libFileName);
+    File parentDir = libFile.getParentFile();
+    if (!parentDir.exists()) {
+      parentDir.mkdirs();
+    }
+    // Now extract the resource
     if (!libFile.exists()) {
-      extractResource(userHome + "/lib/" + archName + "/" + libFileName, libFile);
+      extractResource("/lib/" + archName + "/" + libFileName, libFile);
     }
 
     // If the OS is Windows, additional dependent DLL files need to be loaded

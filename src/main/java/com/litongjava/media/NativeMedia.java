@@ -8,6 +8,13 @@ public class NativeMedia {
   }
 
   /**
+   * init load lib
+   */
+  public static void init() {
+
+  }
+
+  /**
    * Splits an MP3 file into smaller MP3 files of specified size
    * 
    * @param srcPath Path to the source MP3 file
