@@ -155,3 +155,6 @@ vcpkg_installed/
 .env
 .next/
 app.zip
+darwin_arm64/
+linux_amd64/
+win_amd64/
