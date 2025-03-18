@@ -43,7 +43,15 @@
 - **保持音质**：在转换过程中尽量保留原始音频质量，确保转换结果满足识别需求
 
 ---
-
+## 开发细节
+- [java-native-media](https://www.tio-boot.com/zh/54_native-media/01.html)
+- [JNI 入门示例](https://www.tio-boot.com/zh/54_native-media/02.html)
+- [mp3拆分](https://www.tio-boot.com/zh/54_native-media/03.html)
+- [mp4转mp3](https://www.tio-boot.com/zh/54_native-media/04.html)
+- [使用 libmp3lame 实现高质量 MP3 编码](https://www.tio-boot.com/zh/54_native-media/05.html)
+- [linux 编译](https://www.tio-boot.com/zh/54_native-media/06.html)
+- [macOS M2编译](https://www.tio-boot.com/zh/54_native-media/07.html)
+- [从 JAR 包中加载本地库文件](https://www.tio-boot.com/zh/54_native-media/08.html)
 ## 使用示例
 
 下面提供了两个典型的使用示例，分别展示了 MP3 分片和 MP4 转 MP3 的调用方式。
