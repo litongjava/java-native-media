@@ -58,7 +58,7 @@ public class LibraryUtils {
     if (WIN_AMD64.equals(archName)) {
       String[] dlls = { "avutil-59.dll", "swresample-5.dll", "libmp3lame.DLL", "avcodec-61.dll", "avformat-61.dll" };
       for (String dll : dlls) {
-        File dllFile = new File(archDir, dll);
+        File dllFile = new File(userHome + File.separator + archDir, dll);
         if (!dllFile.exists()) {
           extractResource("/lib/" + archName + "/" + dll, dllFile);
         }
