@@ -15,4 +15,19 @@ public class NativeMediaTest {
       System.out.println(string);
     }
   }
+
+  @Test
+  public void supportFormats() {
+    String[] supportFormats = NativeMedia.supportFormats();
+    for (String string : supportFormats) {
+      System.out.println(string);
+    }
+  }
+
+  @Test
+  public void toMp3() {
+    String inputFile = "G:\\video\\03.软件开发学习视频\\java\\jbolt\\jbolt内训教程\\input.flv";
+    String outputPath = NativeMedia.toMp3(inputFile);
+    System.out.println(outputPath);
+  }
 }

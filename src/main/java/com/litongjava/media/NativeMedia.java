@@ -30,4 +30,11 @@ public class NativeMedia {
    * @return Path to the output MP3 file on success, or error message on failure
    */
   public static native String mp4ToMp3(String inputPath);
+
+  public static native String toMp3(String inputPath);
+
+  public static native String convertTo(String inputPath,String targetFormat);
+
+  public static native String[] supportFormats();
+
 }
