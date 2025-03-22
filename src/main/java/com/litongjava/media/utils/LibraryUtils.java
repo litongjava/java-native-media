@@ -35,7 +35,8 @@ public class LibraryUtils {
     }
 
     // Create the directory for storing the extracted library file, e.g.: lib/win_amd64/
-    File libFile = new File(userHome + File.separator + archName, libFileName);
+    String dstDir = userHome + File.separator + "lib" + File.separator + archName;
+    File libFile = new File(dstDir, libFileName);
     File parentDir = libFile.getParentFile();
     if (!parentDir.exists()) {
       parentDir.mkdirs();
@@ -47,12 +48,9 @@ public class LibraryUtils {
     if (WIN_AMD64.equals(archName)) {
       String[] dlls = { "avutil-59.dll", "swresample-5.dll", "libmp3lame.DLL", "avcodec-61.dll", "avformat-61.dll" };
       for (String dll : dlls) {
-        File dllFile = new File(userHome + File.separator + archName, dll);
+        File dllFile = new File(dstDir, dll);
         extractResource("/lib/" + archName + "/" + dll, dllFile);
-      }
-      // The order of loading DLLs must not be changed
-      for (String dll : dlls) {
-        System.load(new File(userHome + File.separator + archName, dll).getAbsolutePath());
+        System.load(dllFile.getAbsolutePath());
       }
     }
 

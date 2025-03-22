@@ -26,15 +26,21 @@ public class NativeMediaTest {
 
   @Test
   public void toMp3() {
-    String inputFile = "G:\\video\\03.软件开发学习视频\\java\\jbolt\\jbolt内训教程\\input.flv";
+    String inputFile = "G:\\video\\input.flv";
     String outputPath = NativeMedia.toMp3(inputFile);
     System.out.println(outputPath);
   }
-  
+
   @Test
   public void convertToMp3() {
     String inputFile = "G:\\video\\input.flv";
     String outputPath = NativeMedia.convertTo(inputFile, "libmp3lame");
     System.out.println(outputPath);
+  }
+
+  @Test
+  public void split() {
+    String inputFile = "G:\\video\\input.mp3";
+    String[] split = NativeMedia.split(inputFile, 10 * 1024 * 1024);
   }
 }

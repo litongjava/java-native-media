@@ -34,6 +34,8 @@ public class NativeMedia {
   public static native String toMp3(String inputPath);
 
   public static native String convertTo(String inputPath,String targetFormat);
+  
+  public static native String[] split(String srcPath, long size);
 
   public static native String[] supportFormats();
 
