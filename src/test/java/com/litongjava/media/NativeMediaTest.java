@@ -30,4 +30,11 @@ public class NativeMediaTest {
     String outputPath = NativeMedia.toMp3(inputFile);
     System.out.println(outputPath);
   }
+  
+  @Test
+  public void convertToMp3() {
+    String inputFile = "G:\\video\\input.flv";
+    String outputPath = NativeMedia.convertTo(inputFile, "libmp3lame");
+    System.out.println(outputPath);
+  }
 }
