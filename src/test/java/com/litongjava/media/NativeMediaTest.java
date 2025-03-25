@@ -1,8 +1,24 @@
 package com.litongjava.media;
 
+import java.io.File;
+
 import org.junit.Test;
 
 public class NativeMediaTest {
+
+  @Test
+  public void testMp4ToMp3() {
+    String inputPath = "E:\\code\\java\\project-litongjava\\yt-dlp-java\\downloads\\AMCUqgu_cTM\\mp4\\一口气了解迪拜经济和它奢华表面的背后....mp4";
+    File file = new File(inputPath);
+    System.out.println(file.exists());
+
+    String result = NativeMedia.mp4ToMp3(inputPath);
+    if (result.startsWith("Error:")) {
+      System.out.println("Conversion failed: " + result);
+    } else {
+      System.out.println("Conversion successful! Output file: " + result);
+    }
+  }
 
   @Test
   public void testSplitMp3() {
