@@ -1,7 +1,5 @@
 package com.litongjava.media;
 
-import java.io.File;
-
 import com.litongjava.media.utils.LibraryUtils;
 
 public class NativeMedia {
@@ -42,29 +40,6 @@ public class NativeMedia {
   public static native String[] supportFormats();
 
   /**
-   * Converts an MP4 file into HLS segments, and appends the generated TS files and m3u8
-   * playlist segments to the specified playlist file.
-   * Note: The playlistUrl must include the full path, for example "./data/hls/{sessionId}/playlist.m3u8",
-   * and the TS segment files will be stored in that directory.
-   *
-   * @param playlistUrl   Path to the playlist file
-   * @param inputMp4Path  Path to the input MP4 file
-   * @param sceneIndex    Current scene index (used to determine the starting segment number for conversion)
-   * @param segmentDuration Segment duration in seconds
-   */
-  public static String appendMp4ToHLS(String playlistUrl, String inputMp4Path, int sceneIndex, int segmentDuration) {
-    // Extract the directory from the playlistUrl
-    File playlistFile = new File(playlistUrl);
-    String directory = playlistFile.getParent();
-
-    // Construct the naming pattern for TS segment files, for example: ./data/hls/{sessionId}/segment_%03d.ts
-    String tsPattern = directory + "/segment_%03d.ts";
-
-    // Call the native method to complete the conversion from MP4 to HLS and update the playlist
-    return splitMp4ToHLS(playlistUrl, inputMp4Path, tsPattern, sceneIndex, segmentDuration);
-  }
-
-  /**
    * Native method to be implemented by C.
    *
    * The implementation should include:
@@ -77,11 +52,48 @@ public class NativeMedia {
    * 4. Appending the generated m3u8 segment content to the playlist file specified by playlistUrl (ensure that
    *    the playlist does not contain the #EXT-X-ENDLIST tag, otherwise the append will be ineffective).
    *
-   * @param playlistUrl   Full path to the playlist file
+   * @param hlsPath   Full path to the playlist file
    * @param inputMp4Path  Path to the input MP4 file
    * @param tsPattern     Naming template for TS segment files (including the directory path)
    * @param sceneIndex    Current scene index (starting segment number for conversion)
    * @param segmentDuration Segment duration in seconds
    */
-  public static native String splitMp4ToHLS(String playlistUrl, String inputMp4Path, String tsPattern, int sceneIndex, int segmentDuration);
+  public static native String splitVideoToHLS(String hlsPath, String inputMp4Path, String tsPattern, int segmentDuration);
+
+  /**
+   * 初始化持久化 HLS 会话，返回一个表示会话的 native 指针
+   * @param playlistUrl HLS 播放列表保存路径，如 "./data/hls/test/playlist.m3u8"
+   * @param tsPattern TS 分段文件命名模板，如 "./data/hls/test/segment_%03d.ts"
+   * @param startNumber 起始分段编号
+   * @param segmentDuration 分段时长（秒）
+   * @return 会话指针（long 类型），后续操作需要传入该指针
+   */
+  public static native long initPersistentHls(String playlistUrl, String tsPattern, int startNumber, int segmentDuration);
+
+  /**
+   * 追加一个 MP4 分段到指定的 HLS 会话中
+   * @param sessionPtr 会话指针（由 initPersistentHls 返回）
+   * @param inputMp4Path 输入 MP4 文件路径
+   * @return 状态信息
+   */
+  public static native String appendMp4Segment(long sessionPtr, String inputMp4Path);
+
+  /**
+   * 在当前音频 HLS 会话中插入一个静音段  
+   * 静音段的时长由 duration 指定，单位为秒。
+   *
+   * @param sessionPtr 会话指针（由 initPersistentHls 返回）
+   * @param duration 静音段时长（秒）
+   * @return 状态信息
+   */
+  public static native String insertSilentSegment(long sessionPtr, double duration);
+
+  /**
+   * 结束指定的 HLS 会话，写入 EXT‑X‑ENDLIST 并关闭输出，同时释放会话资源
+   * @param sessionPtr 会话指针（由 initPersistentHls 返回）
+   * @param playlistUrl 播放列表路径
+   * @return 状态信息
+   */
+  public static native String finishPersistentHls(long sessionPtr, String playlistUrl);
+
 }
