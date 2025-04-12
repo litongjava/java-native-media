@@ -1,10 +1,12 @@
 package com.litongjava.media;
 
+import com.litongjava.media.task.HlsSessionCleaner;
 import com.litongjava.media.utils.LibraryUtils;
 
 public class NativeMedia {
   static {
     LibraryUtils.load();
+    HlsSessionCleaner.start();
   }
 
   /**
@@ -110,4 +112,16 @@ public class NativeMedia {
    */
   public static native boolean merge(String[] inputPaths, String outputPath);
 
+  /**
+   * 列出当前所有活跃的 HLS 会话及相关信息，如会话创建时间、当前时间偏移等
+   * @return JSON 格式的字符串列表，每个对象描述一个会话的信息
+   */
+  public static native String listHlsSession();
+
+  /**
+   * 释放指定的 HLS 会话资源，不生成播放列表 trailer（用于直接释放会话）。
+   * @param sessionPtr 会话指针（由 initPersistentHls 返回）
+   * @return 状态信息
+   */
+  public static native String freeHlsSession(long sessionPtr);
 }
