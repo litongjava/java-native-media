@@ -76,7 +76,7 @@ public class NativeMedia {
    * @param inputMp4Path 输入 MP4 文件路径
    * @return 状态信息
    */
-  public static native String appendMp4Segment(long sessionPtr, String inputMp4Path);
+  public static native String appendVideoSegmentToHls(long sessionPtr, String inputMp4Path);
 
   /**
    * 在当前音频 HLS 会话中插入一个静音段  
@@ -95,5 +95,19 @@ public class NativeMedia {
    * @return 状态信息
    */
   public static native String finishPersistentHls(long sessionPtr, String playlistUrl);
+
+  /**
+   * Merges multiple video/audio files into a single output file using stream copy.
+   * This method calls a native C function that utilizes the FFmpeg command-line tool.
+   * The input files should ideally have compatible stream parameters (codec, resolution, etc.)
+   * for stream copy to work reliably and efficiently.
+   *
+   * @param inputPaths An array of absolute paths to the input media files.
+   * @param outputPath The absolute path for the merged output media file.
+   * @return true if the merging process initiated by FFmpeg completes successfully (exit code 0), false otherwise.
+   * @throws NullPointerException if inputPaths or outputPath is null, or if inputPaths contains null elements.
+   * @throws IllegalArgumentException if inputPaths contains fewer than 2 files.
+   */
+  public static native boolean merge(String[] inputPaths, String outputPath);
 
 }
