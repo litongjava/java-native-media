@@ -112,6 +112,8 @@ public class NativeMedia {
    */
   public static native boolean merge(String[] inputPaths, String outputPath);
 
+  public static native double getVideoLength(String inputPath);
+
   /**
    * 列出当前所有活跃的 HLS 会话及相关信息，如会话创建时间、当前时间偏移等
    * @return JSON 格式的字符串列表，每个对象描述一个会话的信息
