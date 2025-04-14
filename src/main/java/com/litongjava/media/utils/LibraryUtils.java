@@ -46,7 +46,7 @@ public class LibraryUtils {
 
     // If the OS is Windows, additional dependent DLL files need to be loaded
     if (WIN_AMD64.equals(archName)) {
-      String[] dlls = { "avutil-59.dll", "swresample-5.dll", "libmp3lame.DLL", "avcodec-61.dll", "avformat-61.dll" };
+      String[] dlls = { "avutil-59.dll", "swresample-5.dll", "libmp3lame.DLL", "avcodec-61.dll", "avformat-61.dll", "swscale-8.dll", "avfilter-10.dll" };
       for (String dll : dlls) {
         File dllFile = new File(dstDir, dll);
         extractResource("/lib/" + archName + "/" + dll, dllFile);

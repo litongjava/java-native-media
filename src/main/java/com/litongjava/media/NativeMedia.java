@@ -126,4 +126,15 @@ public class NativeMedia {
    * @return 状态信息
    */
   public static native String freeHlsSession(long sessionPtr);
+
+  /**
+   * 给视频添加右下角水印（支持中文），输出单独保存的视频。
+   * @param inputVideoPath 输入视频文件路径
+   * @param outputVideoPath 输出视频文件保存路径
+   * @param watermarkText 水印文本，要求传入 UTF-8 编码的文本（支持中文）
+   * @param fontFile 字体文件路径，如果为 null 或空字符串，则使用默认字体
+   * @return 处理状态信息
+   */
+  public static native String addWatermarkToVideo(String inputVideoPath, String outputVideoPath, String watermarkText, String fontFile);
+
 }
