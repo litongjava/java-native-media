@@ -7,6 +7,11 @@ import java.util.List;
 
 public class VideoWaterUtils {
 
+  public static final String LOG_FOLDER = "ffmpeg_logs";
+  static {
+    new File(LOG_FOLDER).mkdirs();
+  }
+
   /**
    * 使用 ffmpeg 给视频添加右下角水印，并将标准输出和错误输出分别写入日志文件。
    *
@@ -52,8 +57,9 @@ public class VideoWaterUtils {
     ProcessBuilder pb = new ProcessBuilder(command);
 
     // 设置将标准输出和错误输出分别重定向到文件
-    File stdoutFile = new File("ffmpeg_stdout.log");
-    File stderrFile = new File("ffmpeg_stderr.log");
+
+    File stdoutFile = new File(LOG_FOLDER, "ffmpeg_stdout.log");
+    File stderrFile = new File(LOG_FOLDER, "ffmpeg_stderr.log");
     pb.redirectOutput(ProcessBuilder.Redirect.to(stdoutFile));
     pb.redirectError(ProcessBuilder.Redirect.to(stderrFile));
 
