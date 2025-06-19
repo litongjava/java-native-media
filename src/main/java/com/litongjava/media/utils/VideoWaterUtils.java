@@ -33,7 +33,7 @@ public class VideoWaterUtils {
 
     // 构造 drawtext 过滤器参数
     // x=w-tw-10:y=h-th-10 表示让水印距离右下角各留10像素
-    String template = "drawtext=fontfile='%s':text='%s':x=w-tw-10:y=h-th-10:fontsize=%d:fontcolor=Black";
+    String template = "drawtext=fontfile='%s':text='%s':x=w-tw-10:y=h-th-10:fontsize=%d:fontcolor=yellow";
     String filterSpec = String.format(template, fontFile, watermarkText, fontSize);
 
     // 构造 ffmpeg 命令参数列表

@@ -1,56 +1,64 @@
 # java-native-media
 
-Audio and Video Processing Optimization Library
+音视频处理优化库
 
 [[toc]]
 
 ---
 
-## Project Background
+## 项目背景
 
-In traditional Java audio and video processing solutions, developers often rely on calling the FFmpeg command-line tool to meet various audio processing requirements. However, this approach has two significant drawbacks:
+在传统的 Java 音视频处理方案中，开发者常常依赖调用 FFmpeg 命令行工具来实现各类音频处理需求。然而，这种方案存在两个显著的痛点：
 
-1. **Performance Overhead**: Calling external processes introduces additional inter-process communication overhead, which affects processing efficiency.
-2. **Increased Package Size**: To ensure complete functionality, it is usually necessary to bundle the FFmpeg binary, which significantly increases the final application package size.
+1. **性能损耗**：调用外部进程会带来额外的进程间通信开销，影响处理效率；
+2. **体积膨胀**：为了保证功能完整，通常需要捆绑 FFmpeg 二进制文件，导致最终应用包体积显著增加。
 
-To address these issues, this project leverages JNI technology, allowing Java to directly call a deeply optimized C language audio and video processing library. This provides a high-performance, low-package-size audio and video processing solution tailored for specific scenarios.
-
----
-
-## Core Features
-
-### 1. MP3 Intelligent Splitting
-
-#### Application Scenario
-
-- Provides an intelligent splitting solution for large language model input file size limitations (e.g., 25MB).
-
-#### Technical Features
-
-- **Split by Specified Byte Size**: Enables intelligent splitting based on a user-defined chunk size.
-- **Ensures Audio Integrity**: Fully considers the integrity of the audio data during splitting to ensure that each segment can be played correctly.
-- **Memory-Efficient Streaming**: Employs an efficient memory streaming mechanism to optimize splitting performance and resource usage.
-
-### 2. MP4 to MP3
-
-#### Application Scenario
-
-- Preprocesses video content for voice recognition by extracting the audio track from a video and converting it to MP3 format.
-
-#### Technical Features
-
-- **Efficient Audio Extraction**: Quickly extracts the audio track from MP4 files.
-- **Preserves Audio Quality**: Retains as much of the original audio quality as possible during conversion, ensuring the output meets recognition requirements.
+为了解决以上问题，本项目利用 JNI 技术，使 Java 能直接调用经过深度优化的 C 语言音视频处理库，针对特定场景实现高性能、低体积的音视频处理方案。
 
 ---
+## 核心功能
 
-## Usage Examples
+### 1. MP3 智能分片
 
-Below are two typical usage examples, demonstrating how to call the MP3 splitting and MP4 to MP3 functionalities.
+#### 应用场景
 
-### MP3 Splitting Example
+- 针对大语言模型输入文件大小限制（例如 25MB）提供智能分片解决方案
 
-In the test case, the `NativeMedia.splitMp3` method is invoked to perform the splitting process on a specified MP3 file.
+#### 技术特点
+
+- **按指定字节数分割**：可以根据用户设定的分片大小进行智能分割；
+- **保证音频完整性**：在分片过程中充分考虑音频数据的完整性，确保分片后仍能正确播放；
+- **内存高效分流**：采用高效的内存分流处理机制，优化分片性能和资源使用
+
+### 2. MP4 转 MP3
+
+#### 应用场景
+
+- 为视频内容语音识别提供预处理，将视频中的音频轨道提取并转换为 MP3 格式
+
+#### 技术特点
+
+- **高效提取音频**：快速提取 MP4 文件中的音频轨道；
+- **保持音质**：在转换过程中尽量保留原始音频质量，确保转换结果满足识别需求
+
+---
+## 开发细节
+- [java-native-media](https://www.tio-boot.com/zh/54_native-media/01.html)
+
+## 本地构建
+```
+git clone https://github.com/litongjava/java-native-media.git
+/data/apps/java-native-media
+git pull
+mvn clean install -DskipTests -Dgpg.skip
+```
+## 使用示例
+
+下面提供了两个典型的使用示例，分别展示了 MP3 分片和 MP4 转 MP3 的调用方式。
+
+### MP3 分片功能示例
+
+在测试用例中，调用 `NativeMedia.splitMp3` 方法对指定 MP3 文件进行分片处理。
 
 ```java
 public class NativeMediaTest {
@@ -58,25 +66,25 @@ public class NativeMediaTest {
   @Test
   public void testSplitMp3() {
     String inputFile = "/audio/01.mp3";
-    long splitSize = 10 * 1024 * 1024; // 10MB split
+    long splitSize = 10 * 1024 * 1024; // 10MB分片
 
     String[] outputFiles = NativeMedia.splitMp3(inputFile, splitSize);
 
     for (String filePath : outputFiles) {
-      System.out.println("Generated split file: " + filePath);
+      System.out.println("生成分片文件: " + filePath);
     }
   }
 }
 ```
 
-**Parameter Description**
+**参数说明**
 
-- `inputFile`: The absolute path of the source file.
-- `splitSize`: The size of each split segment (in bytes). It is recommended to set this to `25 * 1024 * 1024` to comply with large language model input file size restrictions.
+- `inputFile`：源文件的绝对路径。
+- `splitSize`：分片大小（单位：字节），建议设置为 `25 * 1024 * 1024` 以适配大语言模型输入文件大小限制。
 
-### MP4 to MP3 Example
+### MP4 转 MP3 示例
 
-By calling the `NativeMedia.mp4ToMp3` method, an MP4 video file can be easily converted to an MP3 audio file.
+通过调用 `NativeMedia.mp4ToMp3` 方法，可以轻松将 MP4 视频文件转换为 MP3 音频文件。
 
 ```java
 package com.litongjava.media;
@@ -96,23 +104,23 @@ public class Mp4ToMp3Test {
 
 ---
 
-## Performance Advantages
+## 性能优势
 
-Based on practical testing and comparisons, the java-native-media solution offers the following advantages in typical scenarios:
+经过实际测试对比，采用 java-native-media 方案在典型场景下具有以下优势：
 
-- **40%-60% Reduction in Processing Time**: JNI call optimizations avoid the performance overhead associated with inter-process communication.
-- **30% Reduction in Memory Usage**: The specialized memory streaming mechanism enhances memory efficiency.
-- **Significantly Reduced Package Size**: Compared to bundling the complete FFmpeg binary, the final package size can be reduced by 85%.
+- **处理耗时减少 40%-60%**：通过 JNI 调用优化，避免了进程间通信带来的性能损耗；
+- **内存占用降低 30%**：针对特定场景的内存分流处理机制使内存使用更高效；
+- **包体积显著减小**：相比捆绑完整的 FFmpeg 二进制文件，最终包体积可缩小 85%。
 
 ---
 
-## Docker Deployment
+## Docker 部署
 
-To simplify deployment and usage, this project also provides a Docker-based example. The following steps detail how to build and run the Docker container.
+为了方便部署和使用，本项目还提供了基于 Docker 的示例。以下是构建和运行 Docker 容器的详细步骤：
 
-### 1. Add Maven Dependency
+### 1. 添加 Maven 依赖
 
-Add the following dependency to your project's `pom.xml`:
+在项目的 `pom.xml` 中添加如下依赖：
 
 ```xml
 <dependency>
@@ -122,10 +130,10 @@ Add the following dependency to your project's `pom.xml`:
 </dependency>
 ```
 
-### 2. Create the java-native-media-test Project
+### 2. 创建 java-native-media-test 项目
 
-Source code location:
-The project includes a standalone `java-native-media-test-1.0.0.jar`, which embeds `java-native-media-1.0.0.jar`. The sample code below demonstrates how to call the MP4 to MP3 functionality via an HTTP interface:
+源码地址
+项目中包含独立的 `java-native-media-test-1.0.0.jar`，其中已经内嵌 `java-native-media-1.0.0.jar`。示例代码如下，展示了如何通过 HTTP 接口调用 MP4 转 MP3 功能：
 
 ```java
 package com.litongjava.test.controller;
@@ -161,63 +169,63 @@ public class MediaController {
 }
 ```
 
-### 3. Dockerfile Example
+### 3. Dockerfile 示例
 
-Below is a Dockerfile example that builds a Docker image based on JDK 8, installing the necessary dependencies (such as FFmpeg and libmp3lame0):
+下面提供了一个 Dockerfile 示例，用于构建基于 JDK 8 的 Docker 镜像，并安装了必要的依赖（如 FFmpeg 和 libmp3lame0）：
 
 ```dockerfile
 FROM litongjava/jdk:8u411-stable-slim
 
 RUN apt-get update && apt-get install -y ffmpeg libmp3lame0
 
-# Set the working directory
+# 设置工作目录
 WORKDIR /app
 
-# Copy the JAR file into the container
+# 复制 JAR 文件到容器
 COPY target/java-native-media-test-1.0.0.jar /app/
 
-# Run the JAR file
+# 运行 JAR 文件
 CMD ["java", "-jar", "java-native-media-test-1.0.0.jar"]
 ```
 
-Build the image using the following command:
+构建镜像命令：
 
 ```bash
 docker build -t litongjava/java-native-media-test:1.0.0 .
 ```
 
-Example of running the image:
+运行镜像示例：
 
 ```bash
 docker run -dit --name java-native-media-test -p 80:80 litongjava/java-native-media-test:1.0.0
 ```
 
-Or run with automatic cleanup after execution:
+或使用以下命令运行并在运行结束后自动清理容器：
 
 ```bash
 docker run --rm --name java-native-media-test -p 80:80 litongjava/java-native-media-test:1.0.0
 ```
 
-Sample runtime output:
+运行时输出示例：
 
 ```
 os name:linux user.home:/root
 load /root/lib/linux_amd64/libnative_media.so
 ```
 
-Final packaged file information:
+最终打包后的文件信息：
 
-- `java-native-media-1.0.0.jar` is approximately 7.21MB.
-- `java-native-media-test-1.0.0.jar` is approximately 13.6MB.
-
----
-
-## Notes
-
-- **Project Positioning**: This project focuses on vertical optimization for specific scenarios rather than serving as a general-purpose multimedia processing framework. If your project requirements exceed the core functionalities supported by this project (e.g., graphical interfaces, filter effects, unconventional encoding formats), it is advisable to choose another solution.
-- **Feature Coverage**: Compared to FFmpeg, this project only implements core functionalities that are frequently used. Developers should select the most appropriate tool based on their specific needs.
-- **Performance and Package Size**: The project has been deeply optimized to significantly enhance processing performance and reduce package size, though additional adaptation may be required for certain edge cases.
+- `java-native-media-1.0.0.jar` 大小约 7.21MB
+- `java-native-media-test-1.0.0.jar` 大小约 13.6MB
 
 ---
 
-Through the above documentation, developers can quickly understand the design rationale, key features, and usage methods of the java-native-media project. It is hoped that this documentation will help you perform audio and video processing tasks more efficiently in your projects.
+## 注意事项
+
+- **项目定位**：本项目专注于针对特定场景的垂直优化，不是一个通用型多媒体处理框架。如果项目需求超出本项目支持的核心功能范围（如图形化界面、滤镜效果、非常规编码格式处理），建议选用其他方案；
+- **功能覆盖**：相较于 FFmpeg，本项目仅实现了高频使用场景下的核心功能，开发者需根据具体需求选择最适合的工具；
+- **性能与体积**：项目经过深度优化，显著提升了处理性能并大幅缩减了包体积，但在一些边缘场景下可能需要额外适配。
+
+---
+
+通过以上文档，开发者可以快速了解 java-native-media 项目的设计初衷、功能特点以及使用方法。希望这篇文档能帮助您在项目中更高效地进行音视频处理任务。
