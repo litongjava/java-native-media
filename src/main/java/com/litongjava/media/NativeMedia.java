@@ -34,6 +34,8 @@ public class NativeMedia {
   public static native String mp4ToMp3(String inputPath);
 
   public static native String toMp3(String inputPath);
+  
+  public static native String toMp3ForSilence(String inputPath,double insertion_silence_duration);
 
   public static native String convertTo(String inputPath, String targetFormat);
 

@@ -34,12 +34,11 @@ public class HlsSessionCleaner {
         try {
           // 调用 NativeMedia.listHlsSession 获取会话列表，返回 JSON 格式字符串
           String sessionListJson = NativeMedia.listHlsSession();
-          System.out.println("Current active sessions: " + sessionListJson);
-
           // 如果返回值为 "[]" 或者为空，则直接返回
           if (sessionListJson == null || sessionListJson.trim().equals("[]")) {
-            System.out.println("No active sessions.");
             return;
+          }else {
+            System.out.println("Current active sessions: " + sessionListJson);
           }
 
           // 去掉前后中括号

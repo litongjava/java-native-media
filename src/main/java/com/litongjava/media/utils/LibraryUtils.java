@@ -12,9 +12,12 @@ public class LibraryUtils {
   public static final String WIN_AMD64 = "win_amd64";
   public static final String DARWIN_ARM64 = "darwin_arm64";
   public static final String LINUX_AMD64 = "linux_amd64";
+  public static final String[] dlls = { "avutil-59.dll", "swresample-5.dll", "libmp3lame.DLL", "avcodec-61.dll",
+      "avformat-61.dll", "swscale-8.dll", "avfilter-10.dll" };
 
   public static void load() {
-    // Determine the current operating system and platform to identify the library file name and resource directory
+    // Determine the current operating system and platform to identify the library
+    // file name and resource directory
 
     String osName = System.getProperty("os.name").toLowerCase();
     String userHome = System.getProperty("user.home").toLowerCase();
@@ -34,7 +37,8 @@ public class LibraryUtils {
       throw new UnsupportedOperationException("Unsupported OS: " + osName);
     }
 
-    // Create the directory for storing the extracted library file, e.g.: lib/win_amd64/
+    // Create the directory for storing the extracted library file, e.g.:
+    // lib/win_amd64/
     String dstDir = userHome + File.separator + "lib" + File.separator + archName;
     File libFile = new File(dstDir, libFileName);
     File parentDir = libFile.getParentFile();
@@ -46,7 +50,7 @@ public class LibraryUtils {
 
     // If the OS is Windows, additional dependent DLL files need to be loaded
     if (WIN_AMD64.equals(archName)) {
-      String[] dlls = { "avutil-59.dll", "swresample-5.dll", "libmp3lame.DLL", "avcodec-61.dll", "avformat-61.dll", "swscale-8.dll", "avfilter-10.dll" };
+
       for (String dll : dlls) {
         File dllFile = new File(dstDir, dll);
         extractResource("/lib/" + archName + "/" + dll, dllFile);
@@ -63,7 +67,8 @@ public class LibraryUtils {
   /**
    * Copies a resource file from the jar to the specified destination.
    *
-   * @param resourcePath The resource path inside the jar, e.g.: /lib/win_amd64/xxx.dll
+   * @param resourcePath The resource path inside the jar, e.g.:
+   *                     /lib/win_amd64/xxx.dll
    * @param destination  The destination file
    */
   private static void extractResource(String resourcePath, File destination) {
@@ -73,7 +78,8 @@ public class LibraryUtils {
       }
       Files.copy(in, destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
-      throw new RuntimeException("Failed to extract resource: " + resourcePath + " to " + destination.getAbsolutePath(), e);
+      throw new RuntimeException("Failed to extract resource: " + resourcePath + " to " + destination.getAbsolutePath(),
+          e);
     }
   }
 }

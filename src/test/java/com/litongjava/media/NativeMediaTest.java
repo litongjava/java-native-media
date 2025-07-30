@@ -23,7 +23,7 @@ public class NativeMediaTest {
   @Test
   public void testSplitMp3() {
     String testFile = "E:\\code\\java\\project-litongjava\\yt-dlp-java\\downloads\\490920099690696704\\01.mp3";
-    //long splitSize = 25 * 1024 * 1024; // 25MB
+    // long splitSize = 25 * 1024 * 1024; // 25MB
     long splitSize = 10 * 1024 * 1024; // 10MB
 
     String[] result = NativeMedia.splitMp3(testFile, splitSize);
@@ -58,5 +58,13 @@ public class NativeMediaTest {
   public void split() {
     String inputFile = "G:\\video\\input.mp3";
     String[] split = NativeMedia.split(inputFile, 10 * 1024 * 1024);
+  }
+
+  @Test
+  public void toMp3ForSilence() {
+    //String inputMp4Path = "E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\02\\539850349333278720.mp4";
+    String inputMp4Path="E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\01\\main.mp4";
+    String mp3Path = NativeMedia.toMp3ForSilence(inputMp4Path, 0);
+    System.out.println(mp3Path);
   }
 }
