@@ -157,9 +157,9 @@ public class NativeMedia {
   /**
    * 返回值：0 表示成功，其他为负的 FFmpeg 错误码或自定义错误
    * @param inputPath
-   * @param outputPngPath
+   * @param outputImagePath
    * @return
    */
-  public static native int saveLastFrame(String inputPath, String outputPngPath);
+  public static native int saveLastFrame(String inputPath, String outputImagePath);
 
 }
