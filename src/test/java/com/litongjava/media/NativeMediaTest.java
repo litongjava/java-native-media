@@ -62,9 +62,19 @@ public class NativeMediaTest {
 
   @Test
   public void toMp3ForSilence() {
-    //String inputMp4Path = "E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\02\\539850349333278720.mp4";
-    String inputMp4Path="E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\01\\main.mp4";
+    // String inputMp4Path =
+    // "E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\02\\539850349333278720.mp4";
+    String inputMp4Path = "E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\01\\main.mp4";
     String mp3Path = NativeMedia.toMp3ForSilence(inputMp4Path, 0);
     System.out.println(mp3Path);
+  }
+
+  @Test
+  public void saveLastFrame() {
+    // String inputMp4Path =
+    // "E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\02\\539850349333278720.mp4";
+    String inputMp4Path = "E:\\code\\java\\project-litongjava\\java-kit-server\\videos\\01\\main.mp4";
+    int saveLastFrame = NativeMedia.saveLastFrame(inputMp4Path, "main.jpg");
+    System.out.println(saveLastFrame);
   }
 }

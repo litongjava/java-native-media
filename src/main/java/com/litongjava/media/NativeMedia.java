@@ -20,7 +20,7 @@ public class NativeMedia {
    * Splits an MP3 file into smaller MP3 files of specified size.
    * 
    * @param srcPath Path to the source MP3 file
-   * @param size Maximum size in bytes for each output file
+   * @param size    Maximum size in bytes for each output file
    * @return Array of paths to the generated MP3 files
    */
   public static native String[] splitMp3(String srcPath, long size);
@@ -29,13 +29,14 @@ public class NativeMedia {
    * Converts an MP4 video file to an MP3 audio file.
    * 
    * @param inputPath Path to the input MP4 file
-   * @return Path to the output MP3 file on success, or an error message on failure
+   * @return Path to the output MP3 file on success, or an error message on
+   *         failure
    */
   public static native String mp4ToMp3(String inputPath);
 
   public static native String toMp3(String inputPath);
-  
-  public static native String toMp3ForSilence(String inputPath,double insertion_silence_duration);
+
+  public static native String toMp3ForSilence(String inputPath, double insertion_silence_duration);
 
   public static native String convertTo(String inputPath, String targetFormat);
 
@@ -46,70 +47,80 @@ public class NativeMedia {
   /**
    * Native method to be implemented by C.
    *
-   * The implementation should include:
-   * 1. Using the native‑media library to convert the MP4 file specified by inputMp4Path into HLS segments,
-   *    with each segment lasting segmentDuration seconds, and the starting segment number determined by sceneIndex.
-   * 2. Naming the generated TS segment files according to tsPattern, and storing them in the same directory
-   *    as the playlistUrl file.
-   * 3. Generating an m3u8 segment based on the converted TS segment information (including the #EXTINF tag
-   *    and the TS file name for each segment).
-   * 4. Appending the generated m3u8 segment content to the playlist file specified by playlistUrl (ensure that
-   *    the playlist does not contain the #EXT-X-ENDLIST tag, otherwise the append will be ineffective).
+   * The implementation should include: 1. Using the native‑media library to
+   * convert the MP4 file specified by inputMp4Path into HLS segments, with each
+   * segment lasting segmentDuration seconds, and the starting segment number
+   * determined by sceneIndex. 2. Naming the generated TS segment files according
+   * to tsPattern, and storing them in the same directory as the playlistUrl file.
+   * 3. Generating an m3u8 segment based on the converted TS segment information
+   * (including the #EXTINF tag and the TS file name for each segment). 4.
+   * Appending the generated m3u8 segment content to the playlist file specified
+   * by playlistUrl (ensure that the playlist does not contain the #EXT-X-ENDLIST
+   * tag, otherwise the append will be ineffective).
    *
-   * @param hlsPath   Full path to the playlist file
-   * @param inputMp4Path  Path to the input MP4 file
-   * @param tsPattern     Naming template for TS segment files (including the directory path)
-   * @param sceneIndex    Current scene index (starting segment number for conversion)
+   * @param hlsPath         Full path to the playlist file
+   * @param inputMp4Path    Path to the input MP4 file
+   * @param tsPattern       Naming template for TS segment files (including the
+   *                        directory path)
+   * @param sceneIndex      Current scene index (starting segment number for
+   *                        conversion)
    * @param segmentDuration Segment duration in seconds
    */
-  public static native String splitVideoToHLS(String hlsPath, String inputMp4Path, String tsPattern, int segmentDuration);
+  public static native String splitVideoToHLS(String hlsPath, String inputMp4Path, String tsPattern,
+      int segmentDuration);
 
   /**
    * 初始化持久化 HLS 会话，返回一个表示会话的 native 指针
-   * @param playlistUrl HLS 播放列表保存路径，如 "./data/hls/test/playlist.m3u8"
-   * @param tsPattern TS 分段文件命名模板，如 "./data/hls/test/segment_%03d.ts"
-   * @param startNumber 起始分段编号
+   * 
+   * @param playlistUrl     HLS 播放列表保存路径，如 "./data/hls/test/playlist.m3u8"
+   * @param tsPattern       TS 分段文件命名模板，如 "./data/hls/test/segment_%03d.ts"
+   * @param startNumber     起始分段编号
    * @param segmentDuration 分段时长（秒）
    * @return 会话指针（long 类型），后续操作需要传入该指针
    */
-  public static native long initPersistentHls(String playlistUrl, String tsPattern, int startNumber, int segmentDuration);
+  public static native long initPersistentHls(String playlistUrl, String tsPattern, int startNumber,
+      int segmentDuration);
 
   /**
    * 追加一个 MP4 分段到指定的 HLS 会话中
-   * @param sessionPtr 会话指针（由 initPersistentHls 返回）
+   * 
+   * @param sessionPtr   会话指针（由 initPersistentHls 返回）
    * @param inputMp4Path 输入 MP4 文件路径
    * @return 状态信息
    */
   public static native String appendVideoSegmentToHls(long sessionPtr, String inputMp4Path);
 
   /**
-   * 在当前音频 HLS 会话中插入一个静音段  
-   * 静音段的时长由 duration 指定，单位为秒。
+   * 在当前音频 HLS 会话中插入一个静音段 静音段的时长由 duration 指定，单位为秒。
    *
    * @param sessionPtr 会话指针（由 initPersistentHls 返回）
-   * @param duration 静音段时长（秒）
+   * @param duration   静音段时长（秒）
    * @return 状态信息
    */
   public static native String insertSilentSegment(long sessionPtr, double duration);
 
   /**
    * 结束指定的 HLS 会话，写入 EXT‑X‑ENDLIST 并关闭输出，同时释放会话资源
-   * @param sessionPtr 会话指针（由 initPersistentHls 返回）
+   * 
+   * @param sessionPtr  会话指针（由 initPersistentHls 返回）
    * @param playlistUrl 播放列表路径
    * @return 状态信息
    */
   public static native String finishPersistentHls(long sessionPtr, String playlistUrl);
 
   /**
-   * Merges multiple video/audio files into a single output file using stream copy.
-   * This method calls a native C function that utilizes the FFmpeg command-line tool.
-   * The input files should ideally have compatible stream parameters (codec, resolution, etc.)
-   * for stream copy to work reliably and efficiently.
+   * Merges multiple video/audio files into a single output file using stream
+   * copy. This method calls a native C function that utilizes the FFmpeg
+   * command-line tool. The input files should ideally have compatible stream
+   * parameters (codec, resolution, etc.) for stream copy to work reliably and
+   * efficiently.
    *
    * @param inputPaths An array of absolute paths to the input media files.
    * @param outputPath The absolute path for the merged output media file.
-   * @return true if the merging process initiated by FFmpeg completes successfully (exit code 0), false otherwise.
-   * @throws NullPointerException if inputPaths or outputPath is null, or if inputPaths contains null elements.
+   * @return true if the merging process initiated by FFmpeg completes
+   *         successfully (exit code 0), false otherwise.
+   * @throws NullPointerException     if inputPaths or outputPath is null, or if
+   *                                  inputPaths contains null elements.
    * @throws IllegalArgumentException if inputPaths contains fewer than 2 files.
    */
   public static native boolean merge(String[] inputPaths, String outputPath);
@@ -118,12 +129,14 @@ public class NativeMedia {
 
   /**
    * 列出当前所有活跃的 HLS 会话及相关信息，如会话创建时间、当前时间偏移等
+   * 
    * @return JSON 格式的字符串列表，每个对象描述一个会话的信息
    */
   public static native String listHlsSession();
 
   /**
    * 释放指定的 HLS 会话资源，不生成播放列表 trailer（用于直接释放会话）。
+   * 
    * @param sessionPtr 会话指针（由 initPersistentHls 返回）
    * @return 状态信息
    */
@@ -131,12 +144,22 @@ public class NativeMedia {
 
   /**
    * 给视频添加右下角水印（支持中文），输出单独保存的视频。
-   * @param inputVideoPath 输入视频文件路径
+   * 
+   * @param inputVideoPath  输入视频文件路径
    * @param outputVideoPath 输出视频文件保存路径
-   * @param watermarkText 水印文本，要求传入 UTF-8 编码的文本（支持中文）
-   * @param fontFile 字体文件路径，如果为 null 或空字符串，则使用默认字体
+   * @param watermarkText   水印文本，要求传入 UTF-8 编码的文本（支持中文）
+   * @param fontFile        字体文件路径，如果为 null 或空字符串，则使用默认字体
    * @return 处理状态信息
    */
-  public static native String addWatermarkToVideo(String inputVideoPath, String outputVideoPath, String watermarkText, String fontFile);
+  public static native String addWatermarkToVideo(String inputVideoPath, String outputVideoPath, String watermarkText,
+      String fontFile);
+
+  /**
+   * 返回值：0 表示成功，其他为负的 FFmpeg 错误码或自定义错误
+   * @param inputPath
+   * @param outputPngPath
+   * @return
+   */
+  public static native int saveLastFrame(String inputPath, String outputPngPath);
 
 }
