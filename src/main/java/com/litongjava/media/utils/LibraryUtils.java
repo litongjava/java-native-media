@@ -41,12 +41,21 @@ public class LibraryUtils {
     // lib/win_amd64/
     String dstDir = userHome + File.separator + "lib" + File.separator + archName;
     File libFile = new File(dstDir, libFileName);
+
     File parentDir = libFile.getParentFile();
     if (!parentDir.exists()) {
       parentDir.mkdirs();
     }
     // Now extract the resource
-    extractResource("/lib/" + archName + "/" + libFileName, libFile);
+    if (Core.UNIX_NATIVE_LIBRARY_NAME.equals(libFileName)) {
+      libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_59);
+      extractResource("/lib/" + archName + "/" + Core.UNIX_NATIVE_LIBRARY_NAME_59, libFile);
+      libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_61);
+      extractResource("/lib/" + archName + "/" + Core.UNIX_NATIVE_LIBRARY_NAME_61, libFile);
+
+    } else {
+      extractResource("/lib/" + archName + "/" + libFileName, libFile);
+    }
 
     // If the OS is Windows, additional dependent DLL files need to be loaded
     if (WIN_AMD64.equals(archName)) {
@@ -60,8 +69,23 @@ public class LibraryUtils {
 
     // Load the main library file
     String absolutePath = libFile.getAbsolutePath();
-    System.out.println("load " + absolutePath);
-    System.load(absolutePath);
+
+    if (Core.UNIX_NATIVE_LIBRARY_NAME.equals(libFileName)) {
+      libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_59);
+      absolutePath = libFile.getAbsolutePath();
+      System.out.println("load " + absolutePath);
+      try {
+        System.load(absolutePath);
+      } catch (UnsatisfiedLinkError e) {
+        System.out.println("failed to load " + absolutePath);
+        libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_61);
+        absolutePath = libFile.getAbsolutePath();
+        System.out.println("load " + absolutePath);
+        System.load(absolutePath);
+      }
+    } else {
+      System.load(absolutePath);
+    }
   }
 
   /**
@@ -72,6 +96,7 @@ public class LibraryUtils {
    * @param destination  The destination file
    */
   private static void extractResource(String resourcePath, File destination) {
+    System.out.println("copy from " + resourcePath + " to " + destination.getAbsolutePath());
     try (InputStream in = LibraryUtils.class.getResourceAsStream(resourcePath)) {
       if (in == null) {
         throw new RuntimeException("Resource does not exist: " + resourcePath);
