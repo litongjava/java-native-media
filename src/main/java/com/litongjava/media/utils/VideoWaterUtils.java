@@ -7,6 +7,7 @@ import java.util.List;
 
 public class VideoWaterUtils {
 
+  public static String linux_font_path = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
   public static final String LOG_FOLDER = "ffmpeg_logs";
   static {
     new File(LOG_FOLDER).mkdirs();
@@ -30,10 +31,12 @@ public class VideoWaterUtils {
       fontFile = "C\\:/Windows/Fonts/simhei.ttf";
     } else if (osName.contains("mac")) {
       fontFile = "/Library/Fonts/Arial Unicode.ttf";
-    } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-      fontFile = "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc";
     } else {
-      fontFile = "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc";
+      if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+        fontFile = linux_font_path;
+      } else {
+        fontFile = linux_font_path;
+      }
     }
 
     // 构造 drawtext 过滤器参数
