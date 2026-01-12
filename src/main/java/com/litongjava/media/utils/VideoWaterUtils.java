@@ -10,7 +10,10 @@ public class VideoWaterUtils {
   public static String linux_font_path = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
   public static final String LOG_FOLDER = "ffmpeg_logs";
   static {
-    new File(LOG_FOLDER).mkdirs();
+    File file = new File(LOG_FOLDER);
+    if (!file.exists()) {
+      file.mkdirs();
+    }
   }
 
   /**
@@ -23,7 +26,8 @@ public class VideoWaterUtils {
    * @throws IOException          当执行命令时发生 I/O 错误
    * @throws InterruptedException 当线程等待 ffmpeg 进程结束时被中断
    */
-  public static int addWatermark(String inputFile, String outputFile, int fontSize, String watermarkText) throws IOException, InterruptedException {
+  public static int addWatermark(String inputFile, String outputFile, int fontSize, String watermarkText)
+      throws IOException, InterruptedException {
 
     String osName = System.getProperty("os.name").toLowerCase();
     String fontFile;
