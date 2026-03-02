@@ -1,128 +1,69 @@
 # java-native-media
 
 音视频处理优化库
-
 [[toc]]
 
 ---
 
-## 项目背景
+# 项目背景
 
-在传统的 Java 音视频处理方案中，开发者常常依赖调用 FFmpeg 命令行工具来实现各类音频处理需求。然而，这种方案存在两个显著的痛点：
+在传统的 Java 音视频处理方案中，开发者通常依赖调用 FFmpeg 命令行工具来实现音视频处理需求。但这种方式存在两个主要痛点：
 
-1. **性能损耗**：调用外部进程会带来额外的进程间通信开销，影响处理效率；
-2. **体积膨胀**：为了保证功能完整，通常需要捆绑 FFmpeg 二进制文件，导致最终应用包体积显著增加。
+1. **性能损耗**
+   调用外部进程会带来额外的进程间通信开销，从而影响整体处理效率。
 
-为了解决以上问题，本项目利用 JNI 技术，使 Java 能直接调用经过深度优化的 C 语言音视频处理库，针对特定场景实现高性能、低体积的音视频处理方案。
+2. **包体积膨胀**
+   为了功能完整性，往往需要捆绑 FFmpeg 二进制文件，导致最终应用包体积显著增加。
 
----
-## 核心功能
-
-### 1. MP3 智能分片
-
-#### 应用场景
-
-- 针对大语言模型输入文件大小限制（例如 25MB）提供智能分片解决方案
-
-#### 技术特点
-
-- **按指定字节数分割**：可以根据用户设定的分片大小进行智能分割；
-- **保证音频完整性**：在分片过程中充分考虑音频数据的完整性，确保分片后仍能正确播放；
-- **内存高效分流**：采用高效的内存分流处理机制，优化分片性能和资源使用
-
-### 2. MP4 转 MP3
-
-#### 应用场景
-
-- 为视频内容语音识别提供预处理，将视频中的音频轨道提取并转换为 MP3 格式
-
-#### 技术特点
-
-- **高效提取音频**：快速提取 MP4 文件中的音频轨道；
-- **保持音质**：在转换过程中尽量保留原始音频质量，确保转换结果满足识别需求
-### 3 更多功能
-更多功能请参考[官方文档](https://www.tio-boot.com/zh/54_native-media/01.html)
-
----
-## 开发细节
-- [java-native-media](https://www.tio-boot.com/zh/54_native-media/01.html)
-
-## 本地构建
-```
-git clone https://github.com/litongjava/java-native-media.git
-/data/apps/java-native-media
-git pull
-mvn clean install -DskipTests -Dgpg.skip
-```
-## 使用示例
-
-下面提供了两个典型的使用示例，分别展示了 MP3 分片和 MP4 转 MP3 的调用方式。
-
-### MP3 分片功能示例
-
-在测试用例中，调用 `NativeMedia.splitMp3` 方法对指定 MP3 文件进行分片处理。
-
-```java
-public class NativeMediaTest {
-
-  @Test
-  public void testSplitMp3() {
-    String inputFile = "/audio/01.mp3";
-    long splitSize = 10 * 1024 * 1024; // 10MB分片
-
-    String[] outputFiles = NativeMedia.splitMp3(inputFile, splitSize);
-
-    for (String filePath : outputFiles) {
-      System.out.println("生成分片文件: " + filePath);
-    }
-  }
-}
-```
-
-**参数说明**
-
-- `inputFile`：源文件的绝对路径。
-- `splitSize`：分片大小（单位：字节），建议设置为 `25 * 1024 * 1024` 以适配大语言模型输入文件大小限制。
-
-### MP4 转 MP3 示例
-
-通过调用 `NativeMedia.mp4ToMp3` 方法，可以轻松将 MP4 视频文件转换为 MP3 音频文件。
-
-```java
-package com.litongjava.media;
-
-public class Mp4ToMp3Test {
-  public static void main(String[] args) {
-    String inputPath = "E:\\code\\cpp\\project-ping\\native-media\\samples\\01.mp4";
-    String result = NativeMedia.mp4ToMp3(inputPath);
-    if (result.startsWith("Error:")) {
-      System.out.println("Conversion failed: " + result);
-    } else {
-      System.out.println("Conversion successful! Output file: " + result);
-    }
-  }
-}
-```
+为了解决以上问题，本项目使用 JNI 技术，使 Java 能直接调用经过深度优化的 C 语言音视频处理库，在特定场景下实现高性能、低体积的音视频处理方案。
 
 ---
 
-## 性能优势
+# 核心功能（已实现）
 
-经过实际测试对比，采用 java-native-media 方案在典型场景下具有以下优势：
+下面列出的功能都属于“已有功能”，包括最初实现的功能和后续新增/扩展的方法，它们已被整合为统一的能力集合，便于开发者快速查阅与使用：
 
-- **处理耗时减少 40%-60%**：通过 JNI 调用优化，避免了进程间通信带来的性能损耗；
-- **内存占用降低 30%**：针对特定场景的内存分流处理机制使内存使用更高效；
-- **包体积显著减小**：相比捆绑完整的 FFmpeg 二进制文件，最终包体积可缩小 85%。
+* **MP3 智能分片**
+  按指定字节数分割 MP3，保证帧边界完整、播放正确，内存高效分流（适合大语言模型输入限制等场景）。
+
+* **MP4 → MP3 提取**
+  从 MP4 视频中高效提取音频并转为 MP3，尽量保留音质，适用于语音识别、音频分析。
+
+* **通用格式转换（容器/编码器映射）**
+  支持传入容器格式（如 `mp3`、`wav`）或编码器名称（如 `libmp3lame`、`aac`），内部自动映射并高效转换。
+
+* **通用格式拆分（流拷贝、实时监控大小、无损拆分）**
+  对任意 FFmpeg 支持的格式进行按大小拆分，采用流拷贝，避免重编码，动态监控输出文件大小，保证数据无损。
+
+* **支持格式查询**
+  返回当前 JNI 库支持的所有格式与编码器名称，方便参数选择。
+
+* **HLS 相关功能（持久会话与即时追加）**
+
+  * 将 MP4 拆为 HLS 段并追加到指定 playlist（支持单次追加）。
+  * 持久 HLS 会话：初始化会话、追加 MP4 段、插入静音段、结束会话（写入 `#EXT-X-ENDLIST`）或直接释放会话资源。
+  * 列出当前活跃 HLS 会话（返回 JSON 信息）。
+
+* **静音处理与拼接支持**
+  在转码或拼接流程中可插入指定时长的静音段，支持 `toMp3ForSilence` 等场景。
+
+* **合并（stream copy）**
+  使用流拷贝方式合并多个媒体文件（前提：输入流参数兼容），高效且避免重新编码。
+
+* **信息获取**
+  获取视频时长等元信息方法（`getVideoLength`）。
+
+* **视频处理工具**
+
+  * 给视频添加右下角水印（支持中文，需 UTF-8 文本和字体文件）。
+  * 保存视频的最后一帧为图片（返回 0 表示成功，其他为错误码或 FFmpeg 错误码）。
+
+* **初始化与库加载**
+  提供 `init()` 方法用于初始化和加载 native 库（建议应用启动时调用）。
 
 ---
 
-## Docker 部署
-
-为了方便部署和使用，本项目还提供了基于 Docker 的示例。以下是构建和运行 Docker 容器的详细步骤：
-
-### 1. 添加 Maven 依赖
-
-在项目的 `pom.xml` 中添加如下依赖：
+# Maven 坐标
 
 ```xml
 <dependency>
@@ -132,61 +73,192 @@ public class Mp4ToMp3Test {
 </dependency>
 ```
 
-### 2. 创建 java-native-media-test 项目
+---
 
-源码地址
-项目中包含独立的 `java-native-media-test-1.0.0.jar`，其中已经内嵌 `java-native-media-1.0.0.jar`。示例代码如下，展示了如何通过 HTTP 接口调用 MP4 转 MP3 功能：
+# Java API（关键方法说明与示例）
+
+
+### 初始化
+首次使用NativeMedia类时会自动进行初始化,加载本地库与必要资源,无需显示调用
+
+### MP3 智能分片
 
 ```java
-package com.litongjava.test.controller;
-
-import java.io.File;
-import com.litongjava.annotation.RequestPath;
-import com.litongjava.media.NativeMedia;
-import com.litongjava.tio.boot.http.TioRequestContext;
-import com.litongjava.tio.http.common.HttpRequest;
-import com.litongjava.tio.http.common.HttpResponse;
-import com.litongjava.tio.http.common.UploadFile;
-import com.litongjava.tio.http.server.util.Resps;
-import com.litongjava.tio.utils.http.ContentTypeUtils;
-import com.litongjava.tio.utils.hutool.FileUtil;
-import com.litongjava.tio.utils.hutool.FilenameUtils;
-
-@RequestPath("/media")
-public class MediaController {
-
-  public HttpResponse toMp3(HttpRequest request) {
-    UploadFile uploadFile = request.getUploadFile("file");
-    byte[] data = uploadFile.getData();
-    new File("upload").mkdirs();
-    File file = new File("upload", uploadFile.getName());
-    FileUtil.writeBytes(data, file);
-    String result = NativeMedia.mp4ToMp3(file.getAbsolutePath());
-    String contentType = ContentTypeUtils.getContentType(FilenameUtils.getSuffix(result));
-    byte[] fileBytes = FileUtil.readBytes(new File(result));
-    HttpResponse response = TioRequestContext.getResponse();
-    Resps.bytesWithContentType(response, fileBytes, contentType);
-    return response;
-  }
+String[] segments = NativeMedia.splitMp3("/data/input/long_audio.mp3", 25L * 1024 * 1024);
+for (String s : segments) {
+  System.out.println("segment: " + s);
 }
 ```
 
-### 3. Dockerfile 示例
+### MP4 转 MP3
 
-下面提供了一个 Dockerfile 示例，用于构建基于 JDK 8 的 Docker 镜像，并安装了必要的依赖（如 FFmpeg 和 libmp3lame0）：
+```java
+String out = NativeMedia.mp4ToMp3("/data/video/input.mp4");
+if (out.startsWith("Error:")) {
+  System.err.println("转换失败：" + out);
+} else {
+  System.out.println("输出：" + out);
+}
+```
+
+### 通用转 MP3（含插入静音）
+
+```java
+String out1 = NativeMedia.toMp3("/data/audio/input.wav");
+String out2 = NativeMedia.toMp3ForSilence("/data/audio/part.wav", 0.8 /* seconds */);
+```
+
+### 通用格式转换
+
+```java
+String out = NativeMedia.convertTo("/data/video/input.flv", "libmp3lame");
+// 或者传入 "mp3" 作为容器名
+```
+
+### 通用拆分（任意格式）
+
+```java
+String[] parts = NativeMedia.split("/data/video/input.mp4", 10 * 1024 * 1024);
+```
+
+### HLS：一次性分片并追加到 playlist
+
+```java
+String result = NativeMedia.splitVideoToHLS("./data/hls/playlist.m3u8", "/data/video/scene1.mp4", "./data/hls/segment_%03d.ts", 6);
+System.out.println(result); // 成功或错误信息
+```
+
+### HLS：持久会话（推荐用于长流程拼接）
+
+```java
+long session = NativeMedia.initPersistentHls("./data/hls/playlist.m3u8", "./data/hls/segment_%03d.ts", 1, 6);
+
+// 追加段
+NativeMedia.appendVideoSegmentToHls(session, "/data/video/part1.mp4");
+NativeMedia.appendVideoSegmentToHls(session, "/data/video/part2.mp4");
+
+// 插入静音段
+NativeMedia.insertSilentSegment(session, 1.5);
+
+// 查询会话列表（JSON）
+String sessionsJson = NativeMedia.listHlsSession();
+
+// 结束并写入 ENDLIST
+NativeMedia.finishPersistentHls(session, "./data/hls/playlist.m3u8");
+
+// 或者直接释放会话（不写 ENDLIST）
+NativeMedia.freeHlsSession(session);
+```
+
+### 合并（stream copy）
+
+```java
+String[] inputs = { "/data/part1.ts", "/data/part2.ts" };
+boolean ok = NativeMedia.merge(inputs, "/data/output/merged.mp4");
+System.out.println("merge ok = " + ok);
+```
+
+### 其它实用方法
+
+```java
+double seconds = NativeMedia.getVideoLength("/data/video/input.mp4");
+int ret = NativeMedia.saveLastFrame("/data/video/input.mp4", "/data/output/last_frame.jpg");
+String res = NativeMedia.addWatermarkToVideo("/data/video/in.mp4", "/data/video/out_watermark.mp4", "版权信息", "/usr/share/fonts/truetype/arial.ttf");
+```
+
+---
+
+# 返回值与错误处理
+
+* 多数方法以字符串返回：成功返回输出路径或成功信息；失败通常以 `Error:` 前缀或非零状态码表示，请在业务代码中进行判定。
+* `merge` 返回 `boolean`，`true` 表示合并成功（FFmpeg 退出码 0）。
+* `saveLastFrame` 返回 `0` 表示成功；其它为 FFmpeg 错误码或自定义错误码。
+* HLS 会话相关方法返回状态字符串或 session 指针（`long`）。会话结束后请务必调用 `finishPersistentHls` 或 `freeHlsSession` 做清理，避免资源泄露。
+
+---
+
+# 部署与依赖安装
+
+> 构建/编译 JNI C 代码时需要开发包（headers 与 .so/.a 链接），运行时若使用预编译 native 库通常只需运行时库（非 `-dev` 包）。下面按平台列出常见安装方法与建议。
+
+### Debian / Ubuntu（构建与运行）
+
+开发环境（包含头文件）：
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential cmake pkg-config openjdk-8-jdk \
+  libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswresample-dev \
+  libmp3lame-dev
+```
+
+仅运行时（使用已编译 native 二进制）：
+
+```bash
+sudo apt-get install -y ffmpeg libavcodec57 libavformat57 libavutil55 libswresample2 libmp3lame0
+```
+
+示例快捷命令（题中提及）：
+
+```bash
+sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswresample-dev libmp3lame-dev -y
+```
+
+### Fedora / CentOS / RHEL（通过 RPM Fusion / EPEL 提供 FFmpeg）
+
+* 启用 EPEL 与 RPM Fusion，然后安装 `ffmpeg` 与开发包（`ffmpeg-devel`、`lame-devel` 等）。
+* 示例（请根据发行版版本调整）：
+
+```bash
+sudo yum install -y epel-release
+# 添加 RPM Fusion 并安装 ffmpeg/开发包，具体命令参考 rpmfusion.org
+sudo yum install -y ffmpeg ffmpeg-devel lame-devel
+```
+
+### Alpine Linux
+
+```bash
+# 运行时
+sudo apk add ffmpeg
+
+# 构建/开发
+sudo apk add build-base cmake pkgconfig openjdk11-jdk ffmpeg-dev libmp3lame-dev
+```
+
+### macOS（Homebrew）
+
+```bash
+xcode-select --install
+brew install pkg-config cmake openjdk ffmpeg
+```
+
+Homebrew 的 `ffmpeg` 通常已包含主流编码器（如 libmp3lame）；如需自定义编译请参阅 Homebrew 公式。
+
+### Windows
+
+* 运行与测试（推荐使用 Chocolatey 或 Scoop）：
+
+```powershell
+choco install ffmpeg
+# 或
+scoop install ffmpeg
+```
+
+* 构建：推荐使用 MSYS2（mingw-w64）或 Visual Studio + vcpkg，根据选择安装相应的 ffmpeg/lame 开发包。
+
+### Docker（统一环境示例）
+
+以下 Dockerfile 基于 JDK 8，并安装必要依赖（FFmpeg、libmp3lame0）：
 
 ```dockerfile
 FROM litongjava/jdk:8u411-stable-slim
 
 RUN apt-get update && apt-get install -y ffmpeg libmp3lame0
 
-# 设置工作目录
 WORKDIR /app
 
-# 复制 JAR 文件到容器
 COPY target/java-native-media-test-1.0.0.jar /app/
 
-# 运行 JAR 文件
 CMD ["java", "-jar", "java-native-media-test-1.0.0.jar"]
 ```
 
@@ -199,35 +271,248 @@ docker build -t litongjava/java-native-media-test:1.0.0 .
 运行镜像示例：
 
 ```bash
-docker run -dit --name java-native-media-test -p 80:80 litongjava/java-native-media-test:1.0.0
-```
-
-或使用以下命令运行并在运行结束后自动清理容器：
-
-```bash
 docker run --rm --name java-native-media-test -p 80:80 litongjava/java-native-media-test:1.0.0
 ```
+---
 
-运行时输出示例：
+## 测试 Controller（基于 tio-boot）
 
+为了便于集成到 HTTP 服务中，本项目在 [java-native-media-test](https://github.com/litongjava/java-native-media-test) 开源项目中提供了一系列基于 tio-boot 的 HTTP 请求处理器。下面是各功能的 Controller 示例，开发者可直接参考并集成到自己的项目中。
+
+### 1. MP3 分片 Controller
+
+```java
+package com.litongjava.test.controller;
+
+import com.litongjava.tio.boot.http.TioRequestContext;
+import com.litongjava.tio.http.common.HttpRequest;
+import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.util.Resps;
+import com.litongjava.tio.utils.hutool.FileUtil;
+import com.litongjava.tio.utils.hutool.FilenameUtils;
+import com.litongjava.tio.utils.http.ContentTypeUtils;
+import com.litongjava.model.upload.UploadFile;
+import com.litongjava.media.NativeMedia;
+import com.litongjava.annotation.RequestPath;
+
+import java.io.File;
+
+@RequestPath("/media/splitMp3")
+public class SplitMp3Controller {
+
+  public HttpResponse splitMp3(HttpRequest request) {
+    UploadFile uploadFile = request.getUploadFile("file");
+    if (uploadFile == null) {
+      return Resps.error("文件上传失败！");
+    }
+
+    byte[] data = uploadFile.getData();
+    new File("upload").mkdirs();
+    File file = new File("upload", uploadFile.getName());
+    FileUtil.writeBytes(data, file);
+
+    // 默认分片大小 25MB
+    long splitSize = 25 * 1024 * 1024;
+    String[] segments = NativeMedia.splitMp3(file.getAbsolutePath(), splitSize);
+
+    StringBuilder sb = new StringBuilder("生成的分片文件：<br/>");
+    for (String seg : segments) {
+      sb.append(seg).append("<br/>");
+    }
+    return Resps.html(sb.toString());
+  }
+}
 ```
-os name:linux user.home:/root
-load /root/lib/linux_amd64/libnative_media.so
+
+### 2. MP4 转 MP3 Controller
+
+```java
+package com.litongjava.test.controller;
+
+import com.litongjava.tio.boot.http.TioRequestContext;
+import com.litongjava.tio.http.common.HttpRequest;
+import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.util.Resps;
+import com.litongjava.media.NativeMedia;
+import com.litongjava.annotation.RequestPath;
+import com.litongjava.model.upload.UploadFile;
+import com.litongjava.tio.utils.hutool.FileUtil;
+
+import java.io.File;
+
+@RequestPath("/media/mp4ToMp3")
+public class Mp4ToMp3Controller {
+
+  public HttpResponse mp4ToMp3(HttpRequest request) {
+    UploadFile uploadFile = request.getUploadFile("file");
+    if (uploadFile == null) {
+      return Resps.error("文件上传失败！");
+    }
+
+    byte[] data = uploadFile.getData();
+    new File("upload").mkdirs();
+    File file = new File("upload", uploadFile.getName());
+    FileUtil.writeBytes(data, file);
+
+    String result = NativeMedia.mp4ToMp3(file.getAbsolutePath());
+    if (result.startsWith("Error:")) {
+      return Resps.error("转换失败：" + result);
+    }
+    return Resps.text("转换成功！输出文件：" + result);
+  }
+}
 ```
 
-最终打包后的文件信息：
+### 3. 通用格式转换 Controller
 
-- `java-native-media-1.0.0.jar` 大小约 7.21MB
-- `java-native-media-test-1.0.0.jar` 大小约 13.6MB
+```java
+package com.litongjava.test.controller;
+
+import com.litongjava.tio.boot.http.TioRequestContext;
+import com.litongjava.tio.http.common.HttpRequest;
+import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.util.Resps;
+import com.litongjava.media.NativeMedia;
+import com.litongjava.annotation.RequestPath;
+import com.litongjava.model.upload.UploadFile;
+import com.litongjava.tio.utils.hutool.FileUtil;
+
+import java.io.File;
+
+@RequestPath("/media/convertTo")
+public class ConvertToController {
+
+  public HttpResponse convertTo(HttpRequest request) {
+    UploadFile uploadFile = request.getUploadFile("file");
+    if (uploadFile == null) {
+      return Resps.error("文件上传失败！");
+    }
+
+    byte[] data = uploadFile.getData();
+    new File("upload").mkdirs();
+    File file = new File("upload", uploadFile.getName());
+    FileUtil.writeBytes(data, file);
+
+    // 例如转换为 MP3（可以传入 "libmp3lame" 或 "mp3"）
+    String outputPath = NativeMedia.convertTo(file.getAbsolutePath(), "libmp3lame");
+    if (outputPath.startsWith("Error:")) {
+      return Resps.error("转换失败：" + outputPath);
+    }
+    return Resps.text("转换成功！输出文件：" + outputPath);
+  }
+}
+```
+
+### 4. 通用格式拆分 Controller
+
+```java
+package com.litongjava.test.controller;
+
+import com.litongjava.tio.boot.http.TioRequestContext;
+import com.litongjava.tio.http.common.HttpRequest;
+import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.util.Resps;
+import com.litongjava.media.NativeMedia;
+import com.litongjava.annotation.RequestPath;
+import com.litongjava.model.upload.UploadFile;
+import com.litongjava.tio.utils.hutool.FileUtil;
+
+import java.io.File;
+
+@RequestPath("/media/split")
+public class SplitController {
+
+  public HttpResponse split(HttpRequest request) {
+    UploadFile uploadFile = request.getUploadFile("file");
+    if (uploadFile == null) {
+      return Resps.error("文件上传失败！");
+    }
+
+    byte[] data = uploadFile.getData();
+    new File("upload").mkdirs();
+    File file = new File("upload", uploadFile.getName());
+    FileUtil.writeBytes(data, file);
+
+    // 按 10MB 拆分
+    String[] segments = NativeMedia.split(file.getAbsolutePath(), 10 * 1024 * 1024);
+
+    StringBuilder sb = new StringBuilder("生成的拆分文件：<br/>");
+    for (String seg : segments) {
+      sb.append(seg).append("<br/>");
+    }
+    return Resps.html(sb.toString());
+  }
+}
+```
+
+### 5. 支持格式查询 Controller
+
+```java
+package com.litongjava.test.controller;
+
+import com.litongjava.tio.boot.http.TioRequestContext;
+import com.litongjava.tio.http.common.HttpRequest;
+import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.util.Resps;
+import com.litongjava.media.NativeMedia;
+import com.litongjava.annotation.RequestPath;
+
+@RequestPath("/media/supportFormats")
+public class SupportFormatsController {
+
+  public HttpResponse supportFormats(HttpRequest request) {
+    String[] formats = NativeMedia.supportFormats();
+    StringBuilder sb = new StringBuilder("支持的格式和编码器列表：<br/>");
+    for (String format : formats) {
+      sb.append(format).append("<br/>");
+    }
+    return Resps.html(sb.toString());
+  }
+}
+```
 
 ---
 
-## 注意事项
+### 测试
 
-- **项目定位**：本项目专注于针对特定场景的垂直优化，不是一个通用型多媒体处理框架。如果项目需求超出本项目支持的核心功能范围（如图形化界面、滤镜效果、非常规编码格式处理），建议选用其他方案；
-- **功能覆盖**：相较于 FFmpeg，本项目仅实现了高频使用场景下的核心功能，开发者需根据具体需求选择最适合的工具；
-- **性能与体积**：项目经过深度优化，显著提升了处理性能并大幅缩减了包体积，但在一些边缘场景下可能需要额外适配。
+- /media/supportFormats
+- /media/splitMp3
+- /media/split
+- /media/convertTo
+- /media/mp4ToMp3
+- /media/toMp3
 
 ---
 
-通过以上文档，开发者可以快速了解 java-native-media 项目的设计初衷、功能特点以及使用方法。希望这篇文档能帮助您在项目中更高效地进行音视频处理任务。
+# 构建 & 本地调试提示
+
+1. JNI 编译时需要 JDK 的头文件（例如 `openjdk-devel` / `default-jdk`）。
+2. 确保 FFmpeg 的开发包（`-dev` / `-devel` / MSYS2/vcpkg 对应包）可用，或在 CMake 中提供正确的 `pkg-config` 路径。
+3. 运行时需让系统能找到 native 库（`LD_LIBRARY_PATH` / `DYLD_LIBRARY_PATH` / PATH）。
+4. `addWatermarkToVideo` 使用中文水印时需传入支持中文的字体文件路径（UTF-8），否则可能乱码或无法渲染。
+5. 若为多平台发布，建议为每个平台预构建 native 二进制并在 `NativeMedia.init()` 根据 `os.name`/`os.arch` 动态加载。
+
+---
+
+# 常见问题（FAQ）
+
+* **只运行不编译是否需要 `-dev` 包？**
+  运行时通常只需运行时库（非 `-dev`）。若 native 库在运行时需要某些开发库的动态链接，请安装对应运行时包。编译 JNI 代码必须安装 `-dev` 包（头文件与静态链接符号）。
+
+* **Windows 下如何获得 libmp3lame 的头文件？**
+  可通过 MSYS2 的 mingw 包或 vcpkg 获取，或下载 FFmpeg 源码并自行编译。
+
+* **HLS 会话指针（sessionPtr）是否线程安全？**
+  sessionPtr 由 native 层维护，为安全起见应在 Java 层做并发保护或保证对同一会话的调用序列化；若需跨线程并发操作，建议在 native 层实现线程安全保护。
+
+* **如何诊断转换失败？**
+
+  * 检查方法返回的错误字符串（通常包含 FFmpeg 的输出）。
+  * 确认系统 FFmpeg 库版本与 native 库编译时版本兼容。
+  * 检查文件读写权限与字体路径（中文水印）。
+
+---
+
+# 许可证与项目定位
+
+本项目聚焦特定场景的垂直优化，不是通用多媒体处理框架。如需更多高级功能（GPU 加速、复杂滤镜、跨平台 GUI 等），建议参考 FFmpeg 原生工具链、gstreamer 或商业 SDK。
