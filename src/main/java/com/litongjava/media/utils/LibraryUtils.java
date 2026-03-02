@@ -127,12 +127,11 @@ public class LibraryUtils {
 
     try (InputStream in = LibraryUtils.class.getResourceAsStream(resourcePath)) {
 
-      if (in == null) {
-        throw new RuntimeException("Resource does not exist: " + resourcePath);
+      if (in != null) {
+        Files.copy(in, destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      } else {
+        System.err.println("Resource does not exist: " + resourcePath);
       }
-
-      Files.copy(in, destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
     } catch (IOException e) {
       throw new RuntimeException("Failed to extract resource: " + resourcePath, e);
     }
