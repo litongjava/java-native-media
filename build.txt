@@ -1,0 +1,8 @@
+[win.build]
+mvn clean install -DskipTests
+
+[linux.build]
+mvn clean install -DskipTests
+
+[mac.build]
+mvn clean install -DskipTests

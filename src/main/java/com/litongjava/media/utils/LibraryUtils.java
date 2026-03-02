@@ -6,105 +6,137 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import com.litongjava.media.core.Core;
-
 public class LibraryUtils {
-  public static final String WIN_AMD64 = "win_amd64";
-  public static final String DARWIN_ARM64 = "darwin_arm64";
-  public static final String LINUX_AMD64 = "linux_amd64";
-  public static final String[] dlls = { "avutil-59.dll", "swresample-5.dll", "libmp3lame.DLL", "avcodec-61.dll",
-      "avformat-61.dll", "swscale-8.dll", "avfilter-10.dll" };
+  private static final String LINUX_AMD64 = "linux_amd64";
+  private static final String[] UNIX_CANDIDATES = { "libnative_media_av59.so", "libnative_media_av61.so" };
+  private static final String[] DEPENDENCIES = { "libavformat.so", "libavcodec.so", "libavutil.so", "libswresample.so",
+      "libswscale.so", "libavfilter.so" };
 
   public static void load() {
-    // Determine the current operating system and platform to identify the library
-    // file name and resource directory
-
     String osName = System.getProperty("os.name").toLowerCase();
-    String userHome = System.getProperty("user.home").toLowerCase();
-    System.out.println("os name:" + osName + " user.home:" + userHome);
-    String archName;
-    String libFileName;
-    if (osName.contains("win")) {
-      libFileName = Core.WIN_NATIVE_LIBRARY_NAME;
-      archName = WIN_AMD64;
-    } else if (osName.contains("mac")) {
-      libFileName = Core.MACOS_NATIVE_LIBRARY_NAME;
-      archName = DARWIN_ARM64;
-    } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix") || osName.contains("linux")) {
-      libFileName = Core.UNIX_NATIVE_LIBRARY_NAME;
-      archName = LINUX_AMD64;
-    } else {
-      throw new UnsupportedOperationException("Unsupported OS: " + osName);
+    boolean isLinux = osName.contains("nux") || osName.contains("nix") || osName.contains("linux");
+    String archName = LINUX_AMD64;
+    String tmpBase = System.getProperty("java.io.tmpdir");
+
+    if (!isLinux) {
+      throw new UnsupportedOperationException("This example focuses on linux.");
     }
 
-    // Create the directory for storing the extracted library file, e.g.:
-    // lib/win_amd64/
-    String dstDir = userHome + File.separator + "lib" + File.separator + archName;
-    File libFile = new File(dstDir, libFileName);
-
-    File parentDir = libFile.getParentFile();
-    if (!parentDir.exists()) {
-      parentDir.mkdirs();
-    }
-    // Now extract the resource
-    if (Core.UNIX_NATIVE_LIBRARY_NAME.equals(libFileName)) {
-      libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_59);
-      extractResource("/lib/" + archName + "/" + Core.UNIX_NATIVE_LIBRARY_NAME_59, libFile);
-      libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_61);
-      extractResource("/lib/" + archName + "/" + Core.UNIX_NATIVE_LIBRARY_NAME_61, libFile);
-
-    } else {
-      extractResource("/lib/" + archName + "/" + libFileName, libFile);
+    // 1) If system already has a compatible lib (try ldconfig), prefer system
+    String found = findSystemLib("libavformat");
+    if (found != null) {
+      // system has libavformat.* — we can try to rely on system loader
+      // Optionally preload some deps if full paths found:
+      tryPreloadDeps(found);
     }
 
-    // If the OS is Windows, additional dependent DLL files need to be loaded
-    if (WIN_AMD64.equals(archName)) {
+    // 2) Extract candidate libs to a safe tmp dir per JVM/per-run
+    File dstDir = new File(tmpBase,
+        "myapp-native-" + System.getProperty("user.name") + "-" + System.getProperty("user.dir").hashCode());
+    if (!dstDir.exists())
+      dstDir.mkdirs();
 
-      for (String dll : dlls) {
-        File dllFile = new File(dstDir, dll);
-        extractResource("/lib/" + archName + "/" + dll, dllFile);
-        System.load(dllFile.getAbsolutePath());
+    // 3) Extract all candidates (if resources exist) to dstDir
+    for (String candidate : UNIX_CANDIDATES) {
+      File f = new File(dstDir, candidate);
+      if (!f.exists()) {
+        try {
+          extractResource("/lib/" + archName + "/" + candidate, f);
+          // ensure readable
+          f.setReadable(true, false);
+        } catch (RuntimeException ex) {
+          // resource might not be bundled; ignore and continue
+        }
       }
     }
 
-    // Load the main library file
-    String absolutePath = libFile.getAbsolutePath();
-
-    if (Core.UNIX_NATIVE_LIBRARY_NAME.equals(libFileName)) {
-      libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_59);
-      absolutePath = libFile.getAbsolutePath();
-      System.out.println("load " + absolutePath);
+    // 4) Try to load each candidate in order; if one fails, try next.
+    UnsatisfiedLinkError lastErr = null;
+    for (String candidate : UNIX_CANDIDATES) {
+      File libFile = new File(dstDir, candidate);
+      if (!libFile.exists())
+        continue;
       try {
-        System.load(absolutePath);
+        // Optionally preload known dependency absolute files if present in same dir
+        preloadLocalDeps(dstDir);
+        System.load(libFile.getAbsolutePath());
+        System.out.println("Loaded native library: " + libFile.getAbsolutePath());
+        return;
       } catch (UnsatisfiedLinkError e) {
-        System.out.println("failed to load " + absolutePath);
-        libFile = new File(dstDir, Core.UNIX_NATIVE_LIBRARY_NAME_61);
-        absolutePath = libFile.getAbsolutePath();
-        System.out.println("load " + absolutePath);
-        System.load(absolutePath);
+        lastErr = e;
+        System.err.println("Failed to load " + libFile.getAbsolutePath() + " -> " + e.getMessage());
+        // continue to next candidate
       }
+    }
+
+    // 5) If still not loaded, rethrow an informative error
+    if (lastErr != null) {
+      throw lastErr;
     } else {
-      System.load(absolutePath);
+      throw new RuntimeException("No suitable native library found (tried candidates).");
     }
   }
 
-  /**
-   * Copies a resource file from the jar to the specified destination.
-   *
-   * @param resourcePath The resource path inside the jar, e.g.:
-   *                     /lib/win_amd64/xxx.dll
-   * @param destination  The destination file
-   */
-  private static void extractResource(String resourcePath, File destination) {
-    System.out.println("copy from " + resourcePath + " to " + destination.getAbsolutePath());
-    try (InputStream in = LibraryUtils.class.getResourceAsStream(resourcePath)) {
-      if (in == null) {
-        throw new RuntimeException("Resource does not exist: " + resourcePath);
+  private static void preloadLocalDeps(File dir) {
+    for (String dep : DEPENDENCIES) {
+      // attempt to find a file like libavformat.so.59 or libavformat.so.61 in dir
+      File[] matches = dir.listFiles((d, name) -> name.startsWith(dep));
+      if (matches != null && matches.length > 0) {
+        for (File m : matches) {
+          try {
+            System.load(m.getAbsolutePath());
+            System.out.println("Preloaded dependency: " + m.getAbsolutePath());
+          } catch (UnsatisfiedLinkError ignored) {
+            // try next; it's fine if preload fails — main load may still work if system has
+            // them
+          }
+        }
       }
+    }
+  }
+
+  // Try to preload from a system absolute path (found via ldconfig -p output)
+  private static void tryPreloadDeps(String libavformatPath) {
+    // libavformatPath might be like "/lib/x86_64-linux-gnu/libavformat.so.59"
+    File lib = new File(libavformatPath);
+    if (lib.exists()) {
+      try {
+        System.load(lib.getAbsolutePath());
+        System.out.println("Preloaded system lib: " + lib.getAbsolutePath());
+      } catch (UnsatisfiedLinkError e) {
+        // ignore; will try other ways
+      }
+    }
+  }
+
+  // Tries to discover system library via ldconfig -p
+  private static String findSystemLib(String shortName) {
+    try {
+      Process p = new ProcessBuilder("ldconfig", "-p").redirectErrorStream(true).start();
+      try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()))) {
+        String line;
+        while ((line = r.readLine()) != null) {
+          if (line.contains(shortName + ".so")) {
+            // parse path at the end
+            int idx = line.lastIndexOf(" => ");
+            if (idx > 0) {
+              return line.substring(idx + 4).trim();
+            }
+          }
+        }
+      }
+    } catch (IOException ignored) {
+    }
+    return null;
+  }
+
+  private static void extractResource(String resourcePath, File destination) {
+    try (InputStream in = LibraryUtils.class.getResourceAsStream(resourcePath)) {
+      if (in == null)
+        throw new RuntimeException("Resource not found: " + resourcePath);
       Files.copy(in, destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
-      throw new RuntimeException("Failed to extract resource: " + resourcePath + " to " + destination.getAbsolutePath(),
-          e);
+      throw new RuntimeException(e);
     }
   }
 }
